@@ -36,7 +36,7 @@ void searchStudent(string name) {
 	string line;
 	bool found = false;
 	while (getline(file, line)) {
-		if (line.find("," + name + ",") != string::npos) { // npos:- not found
+		if (line.find("," + name + ",") != string::npos) { // npos is like "not found" position in a string
 		    cout << "Found: \n" << line << endl;
 		    found = true;
 		}

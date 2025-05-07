@@ -1,56 +1,70 @@
 # Consider telephone book database of N clients. Make use of a hash table implementation to quickly
 # look up client‘s telephone number. Make use of two collision handling techniques and compare them
-# using number of comparisons required to find a set of telephone numbers. 
-SIZE = 10  # Size of the hash table
+# using number of comparisons required to find a set of telephone numbers.
+def hashfxn(key, size):
+    return hash(key) % size
 
-# Create an empty table and a flag list to track occupied slots
-table = [None] * SIZE
-occupied = [False] * SIZE
+def linearinsert(table, key, value):
+    index = hashfxn(key, len(table))
+    while table[index] is not None:
+        index = (index + 1) % len(table)
+    table[index] = (key, value)
 
-def hash_function(phone):
-    last_two = int(phone) % 100       # Extract last two digits
-    return last_two % SIZE            # Map to index in table
+def doubleinsert(table, key, value):
+    index = hashfxn(key, len(table))
+    step = 1 + (hash(key) % (len(table) - 1))
+    while table[index] is not None:
+        index = (index + step) % len(table)
+    table[index] = (key, value)
 
-def insert(name, phone):
-    index = hash_function(phone)      # Get hash index
-    while occupied[index]:            # If occupied, use linear probing
-        index = (index + 1) % SIZE
-    table[index] = (name, phone)      # Insert name and phone
-    occupied[index] = True            # Mark slot as filled
+def linearsearch(table, key):
+    index = hashfxn(key, len(table))        # Calculate initial index using hash function
+    while table[index] is not None:               # While slot is not empty
+        pair = table[index]                       # Get the key-value pair stored at index
+        k = pair[0]                               # Extract key
+        v = pair[1]                               # Extract value
+        if k == key:                              # If keys match, return value
+            return v
+        index = (index + 1) % len(table)          # Move to next index (circular probing)
+    return None                                   # If key not found
 
-def search(phone):
-    index = hash_function(phone)      # Get initial index
-    start = index                     # Remember starting point
-    comparisons = 0                   # Count number of comparisons
-    while occupied[index]:            # Loop until an empty slot
-        comparisons += 1
-        if table[index][1] == phone:  # If phone matches, return
-            return index, comparisons
-        index = (index + 1) % SIZE    # Continue linear probing
-        if index == start:            # Avoid infinite loop
-            break
-    return None, comparisons          # Not found
+def doublesearch(table, key):
+    index = hashfxn(key, len(table))                  # Primary hash to get initial index
+    step = 1 + (hash(key) % (len(table) - 1))               # Secondary hash for step size
+    while table[index] is not None:                         # While slot is not empty
+        pair = table[index]                                 # Get the key-value pair at index
+        k = pair[0]                                         # Extract key
+        v = pair[1]                                         # Extract value
+        if k == key:                                        # If keys match, return value
+            return v
+        index = (index + step) % len(table)                 # Move to next index using double hashing
+    return None                                             # If key not found
 
-def display():
-    print("\n--- Hash Table (Linear Probing) ---")
-    for i, entry in enumerate(table):
-        if entry:
-            print(f"[{i}] -> Name: {entry[0]}, Phone: {entry[1]}")
-        else:
-            print(f"[{i}] -> Empty")
+def test(clientlist):
+    size = 100
+    lineartable = [None] * size
+    doubletable = [None] * size
+    for name, telephone in clientlist:
+        linearinsert(lineartable, name, telephone)
+        doubleinsert(doubletable, name, telephone)
+    linearcomparison = 0
+    for name, _ in clientlist: # _ used to ignore second parameter
+        linearcomparison += 1
+        linearsearch(lineartable, name)
+    doublecomparison = 0
+    for name, _ in clientlist:
+        doublecomparison += 1
+        doublesearch(doubletable, name)
+    return linearcomparison, doublecomparison
 
-clients = [
-    ("Alice", "9876543210"),
-    ("Bob", "9765432198"),
-    ("Charlie", "9632587412"),
-]
-# Insert all clients into hash table
-for name, phone in clients:
-    insert(name, phone)
-# Display the hash table
-display()
-# Search and show comparisons
-print("\n--- Search Comparisons ---")
-for name, phone in clients:
-    index, comparisons = search(phone)
-    print(f"Searching for {name}'s number ({phone}): Found at index {index}, Comparisons: {comparisons}")
+if __name__ == "__main__":
+    clients = [
+        ("John", "123-456-7890"),
+        ("Alice", "234-567-8901"),
+        ("Bob", "345-678-9012"),
+        ("Mary", "456-789-0123"),
+        ("David", "567-890-1234")
+    ]
+    linear,double = test(clients)
+    print("Linear Probing Comparisons:", linear)
+    print("Double Hashing Comparisons:", double)

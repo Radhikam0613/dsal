@@ -1,25 +1,23 @@
-// A Dictionary stores keywords and its meanings. Provide facility for adding new
-// keywords, deleting keywords, updating values of any entry. Provide facility to
-// display whole data sorted in ascending/ Descending order. Also find how many
-// maximum comparisons may require for finding any keyword. Use Height balance
-// tree and find the complexity for finding a keyword
 #include <iostream>
 using namespace std;
 
 struct Node {
     string key, value;
-    Node *left = nullptr, *right = nullptr;
+    Node *left = 0, *right = 0;
     int height = 1;
-
-    Node(string k, string v) : key(k), value(v) {}
+    Node(string key, string value) : key(key), value(value) {}
 };
 
-int getHeight(Node* node) {
-    return node ? node->height : 0;
-}
+int getHeight(Node* node) { return node ? node->height : 0; }
+int getBalance(Node* node) { return node ? getHeight(node->left) - getHeight(node->right) : 0; }
 
-int getBalance(Node* node) {
-    return node ? getHeight(node->left) - getHeight(node->right) : 0;
+Node* rotateRight(Node* x) {
+    Node* y = x->left;
+    x->left = y->right;
+    y->right = x;
+    x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+    y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+    return y;
 }
 
 Node* rotateLeft(Node* x) {
@@ -31,107 +29,103 @@ Node* rotateLeft(Node* x) {
     return y;
 }
 
-Node* getMin(Node* node) {
-    while (node && node->left) {
-        node = node->left;
+Node* insert(Node* node, string key, string value) {
+    if (!node) {
+    return new Node(key, value);
+    }
+    if (key < node->key) {
+        node->left = insert(node->left, key, value);
+    } else if (key > node->key) {
+        node->right = insert(node->right, key, value);
+    } else {
+        node->value = value; // no duplicates
+        return node;
+    }    
+    node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
+    int balance = getBalance(node);
+
+    if (balance < -1 && key > node->right->key) 
+        return rotateLeft(node);
+
+    if (balance < -1 && key < node->right->key) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+    if (balance > 1 && key < node->left->key) 
+        return rotateRight(node);
+
+    if (balance > 1 && key > node->left->key) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
     }
     return node;
 }
 
-Node* rotateRight(Node* y) {
-    Node* x = y->left;
-    y->left = x->right;
-    x->right = y;
-    y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
-    x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
-    return x;
+Node* getMinValueNode(Node* node) {
+    while (node->left) node = node->left;
+    return node;
 }
 
-Node* remove(Node* root, string key) {
-    if (root == NULL)
-        return nullptr;
-    if (key < root->key) {
-        root->left = remove(root->left, key);
-    } else if (key > root->key) {
-        root->right = remove(root->right, key);
-    } else {
-        if (root->left == NULL || root->right == NULL) { // one child
-            Node* temp = root->left ? root->left : root->right;
-            delete root;
+Node* remove(Node* node, string key) {
+    if (!node) return nullptr;
+    if (key < node->key) node->left = remove(node->left, key);
+    else if (key > node->key) node->right = remove(node->right, key);
+    else {
+        if (node->left == nullptr || node->right == nullptr){// No or one child
+            Node* temp = node->left ? node->left : node->right;// this makes temp the existing child in onr child case
+            delete node;
             return temp;
         }
-        Node* temp = getMin(root->right); // two child
-        root->key = temp->key;
-        root->value = temp->value;
-        root->right = remove(root->right, temp->key);
-    } // balance heights after deletion
-    root->height = max(getHeight(root->left), getHeight(root->right)) + 1;
-    int balance = getBalance(root);
-    if (balance > 1 && getBalance(root->left) >= 0) return rotateRight(root);
-    if (balance < -1 && getBalance(root->right) <= 0) return rotateLeft(root);
-    if (balance > 1 && getBalance(root->left) < 0) return root->left = rotateLeft(root->left), rotateRight(root);
-    if (balance < -1 && getBalance(root->right) > 0) return root->right = rotateRight(root->right), rotateLeft(root);
-    return root;
+        Node* temp = getMinValueNode(node->right);// min value in right subtree
+        node->key = temp->key;
+        node->value = temp->value;
+        node->right = remove(node->right, temp->key);// delete temp after storing it in curr to be deleted node
+    }
+    node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
+    int balance = getBalance(node);
+    if (balance < -1 && getBalance(node->right) <= 0) return rotateLeft(node);
+    if (balance < -1 && getBalance(node->right) > 0) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+    if (balance > 1 && getBalance(node->left) >= 0) return rotateRight(node);
+    if (balance > 1 && getBalance(node->left) < 0) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+    return node;
 }
 
-Node* insert(Node* root, string key, string value) {
-    if (root == NULL) 
-        return new Node(key, value);
-    if (key < root->key) {
-        root->left = insert(root->left, key, value);
-    } else if (key > root->key) {
-        root->right = insert(root->right, key, value);
+bool search(Node* node, string key) {
+    if (!node) return false;
+    if (key == node->key) return true;
+    if (key < node->key) {
+        return search(node->left, key);
     } else {
-        root->value = value; // key exists so update the value
-        return root;
-    }
-    root->height = max(getHeight(root->left), getHeight(root->right)) + 1;
-    int balance = getBalance(root);
-    if (balance > 1 && key < root->left->key) return rotateRight(root);
-    if (balance < -1 && key > root->right->key) return rotateLeft(root);
-    if (balance > 1 && key > root->left->key) {
-        root->left = rotateLeft(root->left);
-        return rotateRight(root);
-    }
-    if (balance < -1 && key < root->right->key) {
-        root->right = rotateRight(root->right);
-        return rotateLeft(root);
-    }
-    return root;
-}
-
-bool search(Node* root, string key) {
-    if (root == NULL) 
-        return false;
-    if (key == root->key) 
-        return true;
-    if (key < root->key) {
-        return search(root->left, key);
-    } else {
-        return search(root->right, key);
+        return search(node->right, key);
     }
 }
 
-void displayAscending(Node* root) {
-    if (root == NULL) return;
-    displayAscending(root->left);
-    cout << root->key << ": " << root->value << endl;
-    displayAscending(root->right);
+void inorder(Node* node) {
+    if (node){
+    inorder(node->left);
+    cout << node->key << ": " << node->value << endl;
+    inorder(node->right);
+    }
 }
 
 int main() {
     Node* root = nullptr;
-    root = insert(root, "zdate", "A fruit");
-    root = insert(root, "cbanana", "A yellow fruit");
-    root = insert(root, "acherry", "A red fruit");
-    cout << "\nDictionary in ascending order (in-order traversal):\n";
-    displayAscending(root);
+    root = insert(root, "zebra", "A animal");
+    root = insert(root, "banana", "A yellow fruit");
+    root = insert(root, "truck", "A vehicle");
+    cout << "\nIn-order (Ascending):\n";
+    inorder(root);
     string term = "banana";
-    cout << "\nSearching for the term '" << term << "'...\n";
-    cout << "'" << term << "' " << (search(root, term) ? "found" : "not found") << " in dictionary.\n";
-    cout << "\nRemoving 'cherry' from the dictionary...\n";
-    root = remove(root, "cherry");
-    cout << "\nDictionary after deleting 'cherry':\n";
-    displayAscending(root);
-    return 0;
+    cout << "\nSearching '" << term << "': " << (search(root, term) ? "Found" : "Not Found") << "\n";
+    cout << "\nDeleting 'apple'...\n";
+    root = remove(root, "apple");
+    cout << "\nAfter Deletion:\n";
+    inorder(root);
 }

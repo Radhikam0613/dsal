@@ -18,7 +18,7 @@ struct Node {
 class BST {
 public:
     Node* insert(Node* root, int data) {
-        if (root == NULL)
+        if (!root)
             return new Node(data);
         if (data < root->data) {
             root->left = insert(root->left, data);
@@ -29,28 +29,24 @@ public:
     }
 
     int longestPath(Node* root) {
-        if (root != NULL) {
+        if (root) {
             int leftPath = longestPath(root->left);
             int rightPath = longestPath(root->right);
             return 1 + max(leftPath, rightPath);
-        } else {
-            return 0;
-        }
+        } else return 0;
     }
 
     int findMin(Node* root) {
-        while (root != nullptr && root->left != nullptr) {
+        while (root && root->left) {
             root = root->left;
         }
-        if (root != nullptr) {
+        if (root) {// Check again if root is not null for empty tree case
             return root->data;
-        } else {
-            return -1;
-        }
+        } else return -1;
     }
 
     Node* swapChildren(Node* root) {
-        if (root != NULL) {
+        if (root) {
             Node* temp = root->left;
             root->left = root->right;
             root->right = temp;
@@ -61,21 +57,14 @@ public:
     }
     
     bool search(Node* root, int key) {
-        if (root == nullptr) {
-            return false;
-        }
-        if (root->data == key) {
-            return true;
-        }
-        if (root->data > key) {
-            return search(root->left, key);
-        } else {
-            return search(root->right, key);
-        }
+        if (!root) return false;
+        if (root->data == key) return true;
+        if (key < root -> data) return search(root->left, key);
+        else return search(root->right, key);
     }
 
     void inorder(Node* root) {
-        if (root != NULL) {
+        if (root) {
             inorder(root->left);
             cout << root->data << " ";
             inorder(root->right);
@@ -87,22 +76,17 @@ int main() {
     BST tree;
     Node* root = nullptr;
     root = tree.insert(root, 50);
-    root = tree.insert(root, 30);
-    root = tree.insert(root, 20);
     root = tree.insert(root, 40);
-    root = tree.insert(root, 70);
-    root = tree.insert(root, 60);
+    root = tree.insert(root, 20);
     root = tree.insert(root, 80);
-    cout << "Inorder Traversal:- "; tree.inorder(root); cout << endl;
+    cout << "Inorder Traversal:- "; 
+    tree.inorder(root);
+    cout << endl;
     cout << "Longest path:- " << tree.longestPath(root) << endl;
     cout << "Min value:- " << tree.findMin(root) << endl;
     root = tree.swapChildren(root);
     cout << "After swapping children: "; tree.inorder(root); cout << endl;
     bool found = tree.search(root, 40);
-    if (found == true) {
-        cout << "Is 40 present? Yes" << endl;
-    } else {
-        cout << "Is 40 present? No" << endl;
-    }
-        return 0;
+    cout << "Is 40 present" << (found ? " Yes" : " No") << endl;
+    return 0;
 }

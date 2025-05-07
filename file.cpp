@@ -3,6 +3,10 @@
 // Display information of particular employee. If record of student does not exist an
 // appropriate message is displayed. If it is, then the system displays the student
 // details. Use sequential file to main the data.
+// add student
+// search student
+// delete student
+// display student
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -31,7 +35,8 @@ void searchStudent() {
             found = true;
         }
     }
-    if (!found) cout << "Student not found.\n";
+    if (!found)
+        cout << "Student not found.\n";
 }
 
 void deleteStudent() {
@@ -49,7 +54,7 @@ void deleteStudent() {
     }
     file.close();
     temp.close();
-    if (found == true) {
+    if (found) {
         remove(studentFile.c_str()); // converets file into desired type and deletes
         rename("temp.txt", studentFile.c_str()); // renames file after converting in desired type
         cout << "Record deleted successfully.\n";
@@ -71,7 +76,8 @@ void displayStudent() {
             break;
         }
     }
-    if (found == false) cout << "Student record not found.\n";
+    if (!found)
+        cout << "Student record not found.\n";
 }
 
 int main() {

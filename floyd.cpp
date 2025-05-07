@@ -1,12 +1,14 @@
 // Represent a given graph using adjacency matrix to find length of shortest path between every pair of
 // vertices. Use Floyd Warshall's algorithm to implement it.
+// printSolution int dist[][v]
+// floydWarshall int dist[][v]
 #include <iostream>
 #include <algorithm>
 using namespace std;
-#define v 5
+#define v 5 // Simple way to define constants.
 #define INF 99999
 
-void printSolution(int dist[][v]) {
+void printSolution(int dist[][v]) { // fixed no of columns
 	for(int i = 0; i < v; i++) {
 		for(int j = 0; j < v; j++){
 		if(dist[i][j] == INF) {
@@ -20,10 +22,9 @@ void printSolution(int dist[][v]) {
 }
 
 void floydWarshall(int dist[][v]) {
-	int i,j,k;
-	for(k = 0; k < v; k++){
-		for(i = 0; i < v; i++){
-			for(j = 0; j < v; j++){
+	for(int k = 0; k < v; k++){
+		for(int i = 0; i < v; i++){
+			for(int j = 0; j < v; j++){
 				dist[i][j] = min(dist[i][j],(dist[i][k] + dist[k][j]));
 			}
 		}

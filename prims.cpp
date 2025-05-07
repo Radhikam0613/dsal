@@ -2,6 +2,11 @@
 // connect them up with each other; and the phone company charges different
 // amounts of money to connect different pairs of cities. You want a set of lines that
 // connects all your offices with a minimum total cost. Solve the problem by suggesting appropriate data structures
+
+// class:-
+    // input
+    // display
+    // minimum
 #include<iostream>
 #include<climits> // Include to use INT_MAX for representing infinity in graphs
 using namespace std;
